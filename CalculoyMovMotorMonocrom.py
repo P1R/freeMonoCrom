@@ -195,7 +195,7 @@ LastPos = 0;
 init();
 while((N > 0) and (N < 1492)):    
     N = raw_input( "Ingresa Nanometros:");
-    N = int(N);
+    N = float(N);
     LastPos = Calcula(N,LastPos)
     print "los microspasos totales son: %d" % LastPos;
     raw_input()
