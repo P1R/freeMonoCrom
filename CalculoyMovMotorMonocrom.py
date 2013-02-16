@@ -3,8 +3,71 @@ Modulo  Movimiento Nanometros
 
 @author: P1R0
 '''
+import serial, sys;
+ser = serial.Serial(0,9600)
+ser.cts = True
+ser.dtr = True
+ser.bytesize = 8
 SxN = 59.71
 ##atributos dentro de objeto
+
+#Funcion para inicializar Monocromador
+def init():
+        ser.flushOutput()
+        ser.write(unicode("A\r\n"))
+        echo()
+        ser.write(unicode("0A\r\n"))
+        echo()
+        ser.write(unicode("A\r\n"))
+        echo()
+        ser.write(unicode("0A\r\n"))
+        echo()
+        ser.write(unicode("0R\r\n"))
+        echo()
+        ser.write(unicode("0U1\r\n"))
+        echo()
+        ser.write(unicode("0V1\r\n"))
+        echo()
+        ser.write(unicode("0T400\r\n"))
+        echo()
+        ser.write(unicode("0K1\r\n"))
+        echo()
+        ser.write(unicode("0Y1\r\n"))
+        echo()
+        ser.write(unicode("0Y0\r\n"))
+        echo()
+        ser.write(unicode("0K0\r\n"))
+        echo()
+        ser.write(unicode("0V1\r\n"))
+        echo()
+        ser.write(unicode("0T1000\r\n"))
+        echo()
+        ser.write(unicode("0F-\r\n"))
+        echo()
+        ser.write(unicode("0V1\r\n"))
+        echo()
+        ser.write(unicode("0T400\r\n"))
+        echo()
+        ser.write(unicode("0K1\r\n"))
+        echo()
+        ser.write(unicode("0V1\r\n"))
+        echo()
+        ser.write(unicode("0T4000\r\n"))
+        echo()
+        ser.write(unicode("0K0\r\n"))
+        echo()
+        ser.write(unicode("0M99999\r\n"))
+        echo()
+        ser.write(unicode("0K1\r\n"))
+        echo()
+        ser.write(unicode("0V1\r\n"))
+        echo()
+        ser.write(unicode("0T400\r\n"))
+        echo()
+        ser.write(unicode("0M-3925\r\n")) #en la posicion cero
+        echo()
+        return 0
+#funcion para aproximar errores    
 def Error(x):
     Y = [0,
          0.010373807,
@@ -81,8 +144,11 @@ def Error(x):
     d=r/(x1-x0);
     y=y0+(d*(x-x0));
     return y
-
+#funcion para calcular y mover el motor
 def Calcula(Nm,LastPos):
+    if((Nm < 1) or (Nm > 1491)):
+        ser.close();
+        sys.exit(0);
     Er=Error(Nm);
     NmyEr = Nm - Er;
     uS = NmyEr * SxN;
@@ -93,16 +159,40 @@ def Calcula(Nm,LastPos):
         uS = int(uS);
     Mover = uS - LastPos;
     print "La diferencia a mover es: %d" % Mover;
+    Mueve(Mover);
     LastPos = uS;
     return LastPos 
+#Funcion para llamar al eco del serial
+def echo():
+    line = ser.readline()
+    print line    
+#Funcion para mover el motor
+def Mueve(Mover):
+    ##mover Full Step cuando recibe como parametros microSteps 
+    MoverFS = ((Mover-3) / 5);
+    ser.flushOutput();
+    ser.write(unicode("0U0\r\n"));
+    echo();
+    ser.write(unicode("0V1\r\n"));
+    echo();
+    ser.write(unicode("0T1000\r\n"));
+    echo();
+    ser.write(unicode("0M%d\r\n" % MoverFS));
+    echo();
+    ser.write(unicode("0U1\r\n"));
+    echo();
+    ser.write(unicode("0V1\r\n"));
+    echo();
+    ser.write(unicode("0T400\r\n"));
+    echo();
+    ##ultimos 3 microsteps para una aproximacion mas suave.
+    ser.write(unicode("0M3\r\n"));
+    echo();
+    return 0;
     
-    
-#def Mueve(Pos):
-    #posicion de entrada en microsteps.
-
-
 N = 0.1;
-LastPos = 0
+LastPos = 0;
+init();
 while((N > 0) and (N < 1492)):    
     N = raw_input( "Ingresa Nanometros:");
     N = int(N);
