@@ -190,12 +190,20 @@ def Mueve(Mover):
     echo();
     return 0;
     
-N = 0.1;
+N = 0;
 LastPos = 0;
 init();
-while((N > 0) and (N < 1492)):    
-    N = raw_input( "Ingresa Nanometros:");
-    N = float(N);
-    LastPos = Calcula(N,LastPos)
+while 1:
+    while type(N)!= float:
+        try:
+            N = raw_input("Ingresa Nanometros o quit para cerrar:");
+            if N == "quit":
+                ser.close();
+                sys.exit(0);
+            N = float(N);
+        except (ValueError, TypeError):
+            print "error, el valor debe ser entero o flotante";
+    LastPos = Calcula(N,LastPos);
     print "los microspasos totales son: %d" % LastPos;
-    raw_input()
+    N=0
+
