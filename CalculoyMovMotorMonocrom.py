@@ -8,11 +8,10 @@ ser = serial.Serial(0,9600)
 ser.cts = True
 ser.dtr = True
 ser.bytesize = 8
-SxN = 59.71
-##atributos dentro de objeto
+SxN = 59.71 #Constante de Calibracion del Motor
 
 #Funcion para inicializar Monocromador
-def init():
+def init(A):
         ser.flushOutput()
         ser.write(unicode("A\r\n"))
         echo()
@@ -64,10 +63,15 @@ def init():
         echo()
         ser.write(unicode("0T400\r\n"))
         echo()
-        ser.write(unicode("0M-3925\r\n")) #en la posicion cero
+        #en la posicion cero
+        ser.write(unicode("0M-3925\r\n"))
         echo()
+        #En de estar fuera de rango mandamos como parametro 1
+        if A == 1:
+            ser.write(unicode("0M3925\r\n"))
+            echo()
         return 0
-#funcion para aproximar errores    
+#funcion para aproximar errores metodo de interpolacion    
 def Error(x):
     Y = [0,
          0.010373807,
@@ -146,9 +150,11 @@ def Error(x):
     return y
 #funcion para calcular y mover el motor
 def Calcula(Nm,LastPos):
+    #Debemos analizar como implementar la salida a LCD 
     if((Nm < 1) or (Nm > 1491)):
-        ser.close();
-        sys.exit(0);
+        init(1);
+        LastPos = float(3925)
+        return LastPos
     Er=Error(Nm);
     NmyEr = Nm - Er;
     uS = NmyEr * SxN;
@@ -168,7 +174,7 @@ def echo():
     print line    
 #Funcion para mover el motor
 def Mueve(Mover):
-    ##mover Full Step cuando recibe como parametros microSteps 
+    #mover Full Step cuando recibe como parametros microSteps 
     MoverFS = ((Mover-3) / 5);
     ser.flushOutput();
     ser.write(unicode("0U0\r\n"));
@@ -185,14 +191,14 @@ def Mueve(Mover):
     echo();
     ser.write(unicode("0T400\r\n"));
     echo();
-    ##ultimos 3 microsteps para una aproximacion mas suave.
+    #ultimos 3 microsteps para una aproximacion mas suave.
     ser.write(unicode("0M3\r\n"));
     echo();
     return 0;
     
 N = 0;
 LastPos = 0;
-init();
+init(0);
 while 1:
     while type(N)!= float:
         try:
@@ -206,4 +212,3 @@ while 1:
     LastPos = Calcula(N,LastPos);
     print "los microspasos totales son: %d" % LastPos;
     N=0
-
