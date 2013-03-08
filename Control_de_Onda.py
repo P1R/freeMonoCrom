@@ -16,7 +16,9 @@ except AttributeError:
 
 class Ui_Form(object):
     NM = 0;
+    LastNM=0;
     LastPos = 0;
+    Step=0;
     Ser = serial.Serial(0,9600)
     Ser.cts = True
     Ser.dtr = True
@@ -59,6 +61,8 @@ class Ui_Form(object):
 
         self.retranslateUi(Form)
         QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL(_fromUtf8("clicked()")), self.buttonClickHandle)
+        QtCore.QObject.connect(self.pushButton_2, QtCore.SIGNAL(_fromUtf8("clicked()")), self.buttonClickHandleLess)
+        QtCore.QObject.connect(self.pushButton_3, QtCore.SIGNAL(_fromUtf8("clicked()")), self.buttonClickHandleMore)
         QtCore.QMetaObject.connectSlotsByName(Form)
     def buttonClickHandle(self):
             while type(self.NM)!= float:
@@ -71,8 +75,20 @@ class Ui_Form(object):
                         break;
             self.LastPos = MM.Calcula(self.Ser,self.NM,self.LastPos);
             self.lcdNumber.display(self.NM)
+            self.LastNM = self.NM
             self.lineEdit.clear()
             self.NM=0
+    def buttonClickHandleMore(self):
+        self.Step = self.spinBox.value()
+        self.LastNM += self.Step
+        self.LastPos = MM.Calcula(self.Ser,self.LastNM,self.LastPos);
+        self.lcdNumber.display(self.LastNM)
+    def buttonClickHandleLess(self):
+        self.Step = self.spinBox.value()
+        self.LastNM -= self.Step
+        self.LastPos = MM.Calcula(self.Ser,self.LastNM,self.LastPos);
+        self.lcdNumber.display(self.LastNM)
+        
     def retranslateUi(self, Form):
         Form.setWindowTitle(QtGui.QApplication.translate("Form", "Control en Longitud de Onda", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Form", "Longitud de Onda Actual(nm):", None, QtGui.QApplication.UnicodeUTF8))
@@ -94,5 +110,3 @@ if __name__ == "__main__":
     sys.exit(app.exec_())
     #para cerrar el puerto una vez cerrado el programa:
     ui.Ser.close();
-
-
