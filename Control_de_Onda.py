@@ -6,8 +6,8 @@
 #      by: PyQt4 UI code generator 4.9.5
 #
 # WARNING! All changes made in this file will be lost!
-
 from PyQt4 import QtCore, QtGui
+import serial, MM;
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -15,6 +15,14 @@ except AttributeError:
     _fromUtf8 = lambda s: s
 
 class Ui_Form(object):
+    NM = 0;
+    LastPos = 0;
+    Ser = serial.Serial(0,9600)
+    Ser.cts = True
+    Ser.dtr = True
+    Ser.bytesize = 8
+    MM.init(Ser, 0)
+
     def setupUi(self, Form):
         Form.setObjectName(_fromUtf8("Form"))
         Form.resize(299, 218)
@@ -53,10 +61,18 @@ class Ui_Form(object):
         QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL(_fromUtf8("clicked()")), self.buttonClickHandle)
         QtCore.QMetaObject.connectSlotsByName(Form)
     def buttonClickHandle(self):
-        NM = self.lineEdit.text()
-        self.lcdNumber.display(NM)
-        NM = int(NM)
-        self.lineEdit.clear()
+            while type(self.NM)!= float:
+                try:
+                    self.NM = self.lineEdit.text()
+                    self.NM = float(self.NM);
+                except (ValueError, TypeError):
+                        print "error, el valor debe ser entero o flotante";
+# CORREGIR ERROR LETRAS Y NUMEROS QUITAR BREAK VER ERROR...
+                        break;
+            self.LastPos = MM.Calcula(self.Ser,self.NM,self.LastPos);
+            self.lcdNumber.display(self.NM)
+            self.lineEdit.clear()
+            self.NM=0
     def retranslateUi(self, Form):
         Form.setWindowTitle(QtGui.QApplication.translate("Form", "Control en Longitud de Onda", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Form", "Longitud de Onda Actual(nm):", None, QtGui.QApplication.UnicodeUTF8))
@@ -76,4 +92,7 @@ if __name__ == "__main__":
     ui.setupUi(Form)
     Form.show()
     sys.exit(app.exec_())
+    #para cerrar el puerto una vez cerrado el programa:
+    ui.Ser.close();
+
 
