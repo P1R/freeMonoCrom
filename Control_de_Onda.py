@@ -7,7 +7,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 from PyQt4 import QtCore, QtGui
-import serial, MM;
+import serial, MM, sys;
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -28,6 +28,7 @@ class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName(_fromUtf8("Form"))
         Form.resize(299, 218)
+        Form.setLocale(QtCore.QLocale(QtCore.QLocale.Spanish, QtCore.QLocale.Mexico))
         self.label = QtGui.QLabel(Form)
         self.label.setGeometry(QtCore.QRect(10, 10, 151, 31))
         self.label.setObjectName(_fromUtf8("label"))
@@ -43,9 +44,9 @@ class Ui_Form(object):
         self.label_2 = QtGui.QLabel(Form)
         self.label_2.setGeometry(QtCore.QRect(10, 160, 111, 21))
         self.label_2.setObjectName(_fromUtf8("label_2"))
-        self.spinBox = QtGui.QSpinBox(Form)
-        self.spinBox.setGeometry(QtCore.QRect(140, 70, 61, 31))
-        self.spinBox.setObjectName(_fromUtf8("spinBox"))
+        self.doubleSpinBox = QtGui.QDoubleSpinBox(Form)
+        self.doubleSpinBox.setGeometry(QtCore.QRect(140, 70, 61, 31))
+        self.doubleSpinBox.setObjectName(_fromUtf8("doubleSpinBox"))
         self.pushButton = QtGui.QPushButton(Form)
         self.pushButton.setGeometry(QtCore.QRect(240, 160, 41, 21))
         self.pushButton.setObjectName(_fromUtf8("pushButton"))
@@ -63,29 +64,55 @@ class Ui_Form(object):
         QtCore.QObject.connect(self.pushButton, QtCore.SIGNAL(_fromUtf8("clicked()")), self.buttonClickHandle)
         QtCore.QObject.connect(self.pushButton_2, QtCore.SIGNAL(_fromUtf8("clicked()")), self.buttonClickHandleLess)
         QtCore.QObject.connect(self.pushButton_3, QtCore.SIGNAL(_fromUtf8("clicked()")), self.buttonClickHandleMore)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+        QtCore.QMetaObject.connectSlotsByName(Form)      
+    #def ErrorMessage(self):
+    #    QtGui.QMessageBox.information(self, 'Message Title', 'The Bosy Text',
+    #                                   QtGui.MessageBox.No | QtGui.MessageBox.Yes || QtGui.MessageBox.Cancel)
+    #    QMessageBox messageBox;
+    #    messageBox.critical(0,"Error","ingresa valores enteros o Decimales");
+    #    messageBox.setFixedSize(500,200);
+        
     def buttonClickHandle(self):
             while type(self.NM)!= float:
                 try:
                     self.NM = self.lineEdit.text()
                     self.NM = float(self.NM);
                 except (ValueError, TypeError):
-                        print "error, el valor debe ser entero o flotante";
+                    break;
+                        #self.NM = 0
+                        #self.lineEdit.clear()
 # CORREGIR ERROR LETRAS Y NUMEROS QUITAR BREAK VER ERROR...
-                        break;
+                        #break;
+            if((self.NM < 1) or (self.NM > 1491)):
+                MM.init(self.Ser, 0)
+                self.lcdNumber.display(self.LastNM)
+                self.lineEdit.clear()
+                return 
             self.LastPos = MM.Calcula(self.Ser,self.NM,self.LastPos);
             self.lcdNumber.display(self.NM)
             self.LastNM = self.NM
             self.lineEdit.clear()
             self.NM=0
     def buttonClickHandleMore(self):
-        self.Step = self.spinBox.value()
+        self.Step = self.doubleSpinBox.value()
         self.LastNM += self.Step
+        if self.LastNM > 1491:
+            MM.init(self.Ser, 0)
+            self.LastNM = 0
+            self.lcdNumber.display(self.LastNM)
+            self.lineEdit.clear()
+            return
         self.LastPos = MM.Calcula(self.Ser,self.LastNM,self.LastPos);
         self.lcdNumber.display(self.LastNM)
     def buttonClickHandleLess(self):
-        self.Step = self.spinBox.value()
+        self.Step = self.doubleSpinBox.value()
         self.LastNM -= self.Step
+        if self.LastNM < 0:
+            MM.init(self.Ser, 0)
+            self.LastNM = 0
+            self.lcdNumber.display(self.LastNM)
+            self.lineEdit.clear()
+            return
         self.LastPos = MM.Calcula(self.Ser,self.LastNM,self.LastPos);
         self.lcdNumber.display(self.LastNM)
         
