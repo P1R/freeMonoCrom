@@ -151,11 +151,6 @@ def Error(x):
     return y
 #funcion para calcular y mover el motor
 def Calcula(ObjSer,Nm,LastPos):
-    #Debemos analizar como implementar la salida a LCD 
-    if((Nm < 1) or (Nm > 1491)):
-        init(ObjSer,1);
-        LastPos = float(3925)
-        return LastPos
     Er=Error(Nm);
     NmyEr = Nm - Er;
     uS = NmyEr * SxN;
