@@ -28,6 +28,8 @@ class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName(_fromUtf8("Form"))
         Form.resize(299, 218)
+        Form.setMinimumSize(QtCore.QSize(299, 218))
+        Form.setMaximumSize(QtCore.QSize(299, 218))
         Form.setLocale(QtCore.QLocale(QtCore.QLocale.Spanish, QtCore.QLocale.Mexico))
         self.label = QtGui.QLabel(Form)
         self.label.setGeometry(QtCore.QRect(10, 10, 151, 31))
