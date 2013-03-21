@@ -67,12 +67,6 @@ class Ui_Form(object):
         QtCore.QObject.connect(self.pushButton_2, QtCore.SIGNAL(_fromUtf8("clicked()")), self.buttonClickHandleLess)
         QtCore.QObject.connect(self.pushButton_3, QtCore.SIGNAL(_fromUtf8("clicked()")), self.buttonClickHandleMore)
         QtCore.QMetaObject.connectSlotsByName(Form)      
-    #def ErrorMessage(self):
-    #    QtGui.QMessageBox.information(self, 'Message Title', 'The Bosy Text',
-    #                                   QtGui.MessageBox.No | QtGui.MessageBox.Yes || QtGui.MessageBox.Cancel)
-    #    QMessageBox messageBox;
-    #    messageBox.critical(0,"Error","ingresa valores enteros o Decimales");
-    #    messageBox.setFixedSize(500,200);
         
     def buttonClickHandle(self):
             while type(self.NM)!= float:
@@ -80,15 +74,12 @@ class Ui_Form(object):
                     self.NM = self.lineEdit.text()
                     self.NM = float(self.NM);
                 except (ValueError, TypeError):
-                    break;
-                        #self.NM = 0
-                        #self.lineEdit.clear()
-# CORREGIR ERROR LETRAS Y NUMEROS QUITAR BREAK VER ERROR...
-                        #break;
+                    self.NM=0;return;
             if((self.NM < 1) or (self.NM > 1491)):
                 MM.init(self.Ser, 0)
-                self.lcdNumber.display(self.LastNM)
+                self.lcdNumber.display(0)
                 self.lineEdit.clear()
+                self.NM=0
                 return 
             self.LastPos = MM.Calcula(self.Ser,self.NM,self.LastPos);
             self.lcdNumber.display(self.NM)
