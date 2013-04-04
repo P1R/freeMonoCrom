@@ -190,7 +190,6 @@ def Mueve(ObjSer, Mover):
     #ultimos 3 microsteps para una aproximacion mas suave.
     ObjSer.write(unicode("0M3\r\n"));
     echo(ObjSer);
-    return 0;
 '''  
 if __name__ == "__main__":  
     N = 0;
