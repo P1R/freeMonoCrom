@@ -9,7 +9,7 @@
 
 from PyQt4 import QtCore, QtGui;
 
-import serial, sys, MM, LIA, xlwt;
+import serial, MM, LIA, xlwt;
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -23,11 +23,11 @@ class Ui_Dialog(object):
     LastPos = 0;
     NumAprom = 0.0;
     j=0;
-    Ser = serial.Serial(0,9600)
-    Ser.cts = True
-    Ser.dtr = True
-    Ser.bytesize = 8
-    MM.init(Ser, 0)
+    SerMon = serial.Serial(0,9600)
+    SerMon.cts = True
+    SerMon.dtr = True
+    SerMon.bytesize = 8
+    MM.init(SerMon, 0)
     SerAmp = serial.Serial(2,9600)
     SerAmp.cts = True
     SerAmp.dtr = True
@@ -162,12 +162,91 @@ class Ui_Dialog(object):
         self.line_6.setFrameShape(QtGui.QFrame.VLine)
         self.line_6.setFrameShadow(QtGui.QFrame.Sunken)
         self.line_6.setObjectName(_fromUtf8("line_6"))
+        self.radioButton_3.setChecked(True)
 
         self.retranslateUi(Dialog)
-        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), Dialog.accept)
+        QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), self.buttonClickHandle)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("rejected()")), Dialog.reject)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
-
+    
+    def buttonClickHandle(self):
+        try:
+            self.N = self.lineEdit.text()
+            self.N = float(self.N);
+        except (ValueError, TypeError):
+            self.N=0;return;
+        if self.radioButton_2.isChecked()== True:
+            self.N = self.N / 10
+            print self.N
+        elif self.radioButton.isChecked() == True:
+            self.N = self.N * 1000
+            print self.N
+        if((self.N < 1) or (self.N > 1491)):
+            self.N=0;return;
+        try:
+            self.eNd = self.lineEdit_2.text()
+            self.eNd = float(self.eNd);
+        except (ValueError, TypeError):
+            self.eNd=0;return;
+        if self.radioButton_2.isChecked()== True:
+            self.eNd = self.eNd / 10
+            print self.eNd
+        elif self.radioButton.isChecked() == True:
+            self.eNd = self.eNd * 1000
+            print self.eNd       
+        if((self.eNd < 1) or (self.eNd > 1491)):
+            self.eNd=0;return;
+        try:
+            self.Step = self.lineEdit_3.text()
+            self.Step = float(self.Step);
+        except (ValueError, TypeError):
+            self.Step=0;return;
+        if self.radioButton_2.isChecked()== True:
+            self.Step = self.Step / 10
+            print self.Step
+        elif self.radioButton.isChecked() == True:
+            self.Step = self.Step * 1000
+            print self.Step 
+        try:
+            self.NumAprom = self.lineEdit_4.text()
+            self.NumAprom = int(self.NumAprom);
+        except (ValueError, TypeError):
+            self.NumAprom=0.0;return;     
+        self.Ejecuta()
+        
+            
+    def Ejecuta(self):
+        self.LastPos = MM.Calcula(self.SerMon,self.N,self.LastPos);
+        if self.N < self.eNd:
+            while self.N <= self.eNd: 
+                self.LastPos = MM.Calcula(self.SerMon, self.N, self.LastPos)
+                A = LIA.PromVolt(self.SerAmp, self.NumAprom)
+                self.ws.write(self.j, 0, self.N)
+                self.ws.write(self.j, 1, A)
+                self.N += self.Step
+                self.j+=1
+                print "EL PASO ACTUAL ES: %f" % self.N
+                print "El Promedio es: %f" % A
+                print "los microspasos totales son: %d" % self.LastPos;
+        elif self.N > self.eNd:
+            while self.N >= self.eNd: 
+                self.LastPos = MM.Calcula(self.SerMon, self.N, self.LastPos)
+                A = LIA.PromVolt(self.SerAmp, self.NumAprom)
+                self.ws.write(self.j, 0, self.N)
+                self.ws.write(self.j, 1, A)
+                self.N -= self.Step
+                self.j+=1
+                print "EL PASO ACTUAL ES: %f" % self.N
+                print "El Promedio es: %f" % A
+                print "los microspasos totales son: %d" % self.LastPos;
+        else:
+            return  
+        self.wb.save('test1.xls')
+        self.N=0
+        self.eNd=0
+        self.Step=0
+        self.NumAprom=0.0    
+            
     def retranslateUi(self, Dialog):
         Dialog.setWindowTitle(QtGui.QApplication.translate("Dialog", "Configurar Escaneo de Onda", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Dialog", "Longitud de Onda Inicial:", None, QtGui.QApplication.UnicodeUTF8))
@@ -189,4 +268,6 @@ if __name__ == "__main__":
     ui.setupUi(Dialog)
     Dialog.show()
     sys.exit(app.exec_())
+    ui.SerMon.close();
+    ui.SerAmp.close();
 
