@@ -7,7 +7,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 from PyQt4 import QtCore, QtGui
-import serial, MM, sys;
+import serial, MM;
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -69,17 +69,18 @@ class Ui_Form(object):
         QtCore.QMetaObject.connectSlotsByName(Form)      
         
     def buttonClickHandle(self):
-            while type(self.NM)!= float:
-                try:
-                    self.NM = self.lineEdit.text()
-                    self.NM = float(self.NM);
-                except (ValueError, TypeError):
-                    self.NM=0;return;
+            #while type(self.NM)!= float:
+            try:
+                self.NM = self.lineEdit.text()
+                self.NM = float(self.NM);
+            except (ValueError, TypeError):
+                self.NM=0;return;
             if((self.NM < 1) or (self.NM > 1491)):
                 MM.init(self.Ser, 0)
                 self.lcdNumber.display(0)
                 self.lineEdit.clear()
                 self.NM=0
+                self.LastNM = self.NM
                 return 
             self.LastPos = MM.Calcula(self.Ser,self.NM,self.LastPos);
             self.lcdNumber.display(self.NM)
@@ -89,6 +90,8 @@ class Ui_Form(object):
     def buttonClickHandleMore(self):
         self.Step = self.doubleSpinBox.value()
         self.LastNM += self.Step
+        if self.Step == 0:
+            return
         if self.LastNM > 1491:
             MM.init(self.Ser, 0)
             self.LastNM = 0
@@ -100,6 +103,8 @@ class Ui_Form(object):
     def buttonClickHandleLess(self):
         self.Step = self.doubleSpinBox.value()
         self.LastNM -= self.Step
+        if self.Step == 0:
+            return
         if self.LastNM < 0:
             MM.init(self.Ser, 0)
             self.LastNM = 0
@@ -121,7 +126,7 @@ class Ui_Form(object):
 
 
 if __name__ == "__main__":
-    import sys
+    import sys;
     app = QtGui.QApplication(sys.argv)
     Form = QtGui.QWidget()
     ui = Ui_Form()
